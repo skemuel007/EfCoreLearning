@@ -1,0 +1,15 @@
+﻿services:
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Passw0rd12345
+      - MSSQL_PID=Developer
+    volumes:
+      - sql_data:/var/opt/mssql
+
+volumes:
+  sql_data:
