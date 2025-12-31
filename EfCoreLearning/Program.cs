@@ -269,3 +269,97 @@ public sealed class Order
    
    var orders = lookup.Values.ToList();
 */
+
+// -- Select specified number of records
+/*
+ * var customers = await db.Customers
+   .AsNoTracking()
+   .OrderBy(c => c.CustomerID)   // IMPORTANT: stable ordering
+   .Take(n)
+   .ToListAsync();
+ */
+Console.WriteLine();
+int n = 5;
+
+var productsNRecordsEfCore = await db.Products.AsNoTracking()
+    .OrderBy(p => p.ProductID)
+    .Select(p => new
+    {
+        ProductID = p.ProductID,
+        CategoryID = p.CategoryID,
+        Name = p.ProductName
+    })
+    .Take(n)
+    .ToListAsync();
+
+foreach (var item in productsNRecordsEfCore)
+{
+    Console.WriteLine($"Product Id: {item.ProductID}");
+}
+
+
+
+var expensiveProductsWithEfCore = await db.Products
+    .AsNoTracking()
+    .Where(p => p.ListPrice > 100m)
+    .OrderByDescending(p => p.ListPrice)
+    .Take(n)
+    .Select(p => new { p.ProductID, p.ProductName, p.ListPrice })
+    .ToListAsync();
+
+foreach (var item in expensiveProductsWithEfCore)
+{
+    Console.WriteLine($"Product Id: {item.ProductID}, ProductName: {item.ProductName}, ListPrice: {item.ListPrice}");
+}
+
+/* -- Strongly typed dapper
+public sealed class CustomerRow
+{
+    public int CustomerID { get; set; }
+    public string EmailAddress { get; set; } = "";
+}
+
+int n = 5;
+
+var sql = @"
+SELECT TOP (@N)
+    customerID AS CustomerID,
+    emailAddress AS EmailAddress
+FROM dbo.customers
+ORDER BY customerID;";
+
+var customers = await conn.QueryAsync<CustomerRow>(sql, new { N = n });
+ */
+
+var dapperTopNResultsSql = @"
+SELECT TOP (@N)
+    customerID,
+    emailAddress
+FROM dbo.customers
+ORDER BY customerID;";
+
+var rows = await conn.QueryAsync(dapperTopNResultsSql, new { N = n });
+
+/*
+int page = 2;
+int pageSize = 10;
+   
+   var customers = await db.Customers
+       .AsNoTracking()
+       .OrderBy(c => c.CustomerID)
+       .Skip((page - 1) * pageSize)
+       .Take(pageSize)
+       .ToListAsync();
+       
+int page = 2;
+int pageSize = 10;
+   
+   var sql = @"
+   SELECT customerID, emailAddress
+   FROM dbo.customers
+   ORDER BY customerID
+   OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
+   
+   var customers = await connection.QueryAsync(sql,
+       new { Offset = (page - 1) * pageSize, PageSize = pageSize });
+*/
