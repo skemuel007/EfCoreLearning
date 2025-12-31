@@ -29,7 +29,6 @@ using var scope = host.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<EshopDbContext>();
 var conn = scope.ServiceProvider.GetRequiredService<IDbConnection>();
 
-// -- select * from products;
 Console.WriteLine("--Selecting with conditions");
 Console.WriteLine("SQL: select * from dbo.Customers where emailAddress = 'barryz@gmail.com'");
 
